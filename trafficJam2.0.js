@@ -80,6 +80,5 @@ function insertarNodos(){
   }
 }
 
-
 insertarNodos()
 console.log(matriz);
