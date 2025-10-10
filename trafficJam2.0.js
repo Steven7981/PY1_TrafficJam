@@ -49,22 +49,37 @@ class Grafo {
     }
   }
 
-  agregarNodo(key, valor = null) {
+  agregarNodo(key, valor = ' ') {
     if (!this.nodos.has(key)) {
       this.nodos.set(key, new Node(key, valor))
     }
     return this.nodos.get(key)
   }
 
-  print() {
-    for (const nodo of this.nodos.values()) {
-      const hijosKeys = [...nodo.hijos].map(h => h.key)
-      console.log(`${nodo.key} -> [${hijosKeys.join(', ')}]`)
+
+  getNodoValue(i, j){
+    return this.nodos.get(`${i},${j}`)
+  }
+
+}
+
+let tamano = 6
+const grafo = new Grafo(tamano,tamano)
+let matriz = []
+
+function insertarNodos(){
+  matriz = []
+  for (i=0; i<tamano; i++){
+    let matrizSub = []
+    for (j=0; j<tamano; j++){
+      let nodo = grafo.getNodoValue(i,j)
+      let simbolo = nodo.valor
+      matrizSub.push(simbolo)
     }
+    matriz.push(matrizSub)
   }
 }
 
-// tablero 3x3
-let tamano = 3
-const grafo = new Grafo(tamano,tamano)
-grafo.print()
+
+insertarNodos()
+console.log(matriz);
