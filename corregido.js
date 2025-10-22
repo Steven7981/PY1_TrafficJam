@@ -317,7 +317,7 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
             (cabeza.i+1 < grafoClonado.filas && grafoClonado.getNodoValue(cabeza.i+1, cabeza.j).valor==='S')) {
           // eliminar B del clon
           for (const p of carroMovido.posiciones) grafoClonado.setNodoValue(p.i, p.j, '.');
-          console.log(`🚗 B llegó a la salida en ${movimientos+1} movimientos.`);
+          console.log(`B llegó a la salida en ${movimientos+1} movimientos.`);
         }
       }
 
@@ -362,7 +362,7 @@ function generarCarrosAleatorios(grafo, numCarros, probB = 0.3) {
 
   let colocados = 0;
   let intentos = 0;
-  const maxIntentos = 1000;
+  const maxIntentos = 2000;
 
   while (colocados < numCarros && intentos < maxIntentos) {
     intentos++;
@@ -373,44 +373,45 @@ function generarCarrosAleatorios(grafo, numCarros, probB = 0.3) {
     const largo = 2 + Math.floor(Math.random() * 2); // 2 o 3 celdas
 
     let i, j;
-    if (orient === 'H') i = Math.floor(Math.random() * filas);
-    else i = Math.floor(Math.random() * (filas - (largo - 1)));
+    if (orient === 'H') {
+      i = Math.floor(Math.random() * filas);
+      j = Math.floor(Math.random() * (columnas - (largo - 1)));
+    } else {
+      i = Math.floor(Math.random() * (filas - (largo - 1)));
+      j = Math.floor(Math.random() * columnas);
+    }
 
-    if (orient === 'V') j = Math.floor(Math.random() * columnas);
-    else j = Math.floor(Math.random() * (columnas - (largo - 1)));
-
+    // Verificar si se puede colocar
     if (!puedeColocar(grafo, i, j, orient, largo)) continue;
 
     if (esB) {
-      // Colocar salida S en la misma fila o columna
-      let salidaI, salidaJ;
-      if (orient === 'H') {
-        salidaI = i;
-        salidaJ = j + largo + Math.floor(Math.random() * (columnas - (j + largo)));
-        if (salidaJ >= columnas) salidaJ = columnas - 1;
-      } else {
-        salidaJ = j;
-        salidaI = i + largo + Math.floor(Math.random() * (filas - (i + largo)));
-        if (salidaI >= filas) salidaI = filas - 1;
-      }
-
-      grafo.setNodoValue(salidaI, salidaJ, 'S');
+      // Colocar carro B
       colocarCarroEnGrafo(grafo, i, j, orient, largo, true);
+
+      // Colocar salida S en el borde correspondiente
+      if (orient === 'H') {
+        const borde = Math.random() < 0.5 ? 0 : columnas - 1;
+        grafo.setNodoValue(i, borde, 'S');
+      } else {
+        const borde = Math.random() < 0.5 ? 0 : filas - 1;
+        grafo.setNodoValue(borde, j, 'S');
+      }
     } else {
+      // Colocar carro normal
       colocarCarroEnGrafo(grafo, i, j, orient, largo, false);
     }
 
     colocados++;
   }
 
-  if (intentos >= maxIntentos) console.warn('⚠️ No se pudieron colocar todos los carros (intentos agotados)');
 }
 
 
-const grafo = new Grafo(4,4);
+
+const grafo = new Grafo(6,6);
 console.log('Tablero inicial:')
 imprimirMatriz(grafo);
-generarCarrosAleatorios(grafo,3);
+generarCarrosAleatorios(grafo,5);
 console.log('Tablero con carros aleatorios:')
 imprimirMatriz(grafo);
 
