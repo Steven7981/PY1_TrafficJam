@@ -321,7 +321,7 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
         }
       }
 
-      console.log(`Moviendo ${carro.valor} hacia ${dir}:`);
+      console.log(`Moviendo ${carro.valor} hacia ${dir}:`); // CONSOLE DE PRINT
       imprimirMatriz(grafoClonado);
       console.log('-------------------');
 
