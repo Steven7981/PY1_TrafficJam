@@ -294,7 +294,7 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
   const bCarros = carros.filter(c => c.valor === 'B');
 
   if (bCarros.length === 0) {
-    console.log(`✅ Todos los B salieron en ${movimientos} movimientos.`);
+    console.log(`Todos los B salieron en ${movimientos} movimientos.`);
     imprimirMatriz(grafo);
     return movimientos;
   }
@@ -411,7 +411,7 @@ function generarCarrosAleatorios(grafo, numCarros, probB = 0.3) {
 const grafo = new Grafo(6,6);
 console.log('Tablero inicial:')
 imprimirMatriz(grafo);
-generarCarrosAleatorios(grafo,5);
+generarCarrosAleatorios(grafo,3);
 console.log('Tablero con carros aleatorios:')
 imprimirMatriz(grafo);
 
