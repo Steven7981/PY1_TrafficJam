@@ -59,6 +59,30 @@ class Grafo {
   }
 }
 
+function crearMatriz(n, m) {
+  const matriz = [];
+  for (let i = 0; i < n; i++) {
+    const fila = [];
+    for (let j = 0; j < m; j++) {
+      fila.push('.'); // valor por defecto
+    }
+    matriz.push(fila);
+  }
+  return matriz;
+}
+
+// Función para convertir un grafo a una matriz
+function grafoAMatriz(grafo) {
+  const matriz = [];
+  for (let i = 0; i < grafo.filas; i++) {
+    const fila = [];
+    for (let j = 0; j < grafo.columnas; j++) {
+      fila.push(grafo.getNodoValue(i, j).valor);
+    }
+    matriz.push(fila);
+  }
+  return matriz;
+}
 
 
 function imprimirMatriz(grafo) {
@@ -112,7 +136,7 @@ function obtenerTodosLosCarros(grafo) {
           posiciones.push({ i, j });
         }
 
-        for (const p of posiciones) visitado[p.i][p.j] = true;
+        for (const pos of posiciones) visitado[pos.i][pos.j] = true;
 
         carros.push({
           valor: 'B',
@@ -208,65 +232,65 @@ function obtenerTodosLosCarros(grafo) {
   return carros;
 }
 
-function puedeMover(grafo, carro, dir) {
+function puedeMover(grafo, carro, direccion) {
   const filas = grafo.filas, cols = grafo.columnas;
   if (carro.orientacion === 'H') {
-    if (dir === 'derecha') {
+    if (direccion === 'derecha') {
       const last = carro.posiciones[carro.posiciones.length - 1];
-      const ni = last.i, nj = last.j + 1;
-      if (nj >= cols) return false;
-      const val = grafo.getNodoValue(ni, nj).valor;
-      return val === '.' || (val === 'S' && carro.valor === 'B');
+      const nuevoI = last.i, nuevoJ = last.j + 1;
+      if (nuevoJ >= cols) return false;
+      const valor = grafo.getNodoValue(nuevoI, nuevoJ).valor;
+      return valor === '.' || (valor === 'S' && carro.valor === 'B');
     }
-    if (dir === 'izquierda') {
+    if (direccion === 'izquierda') {
       const first = carro.posiciones[0];
-      const ni = first.i, nj = first.j - 1;
-      if (nj < 0) return false;
-      return grafo.getNodoValue(ni, nj).valor === '.';
+      const nuevoI = first.i, nuevoJ = first.j - 1;
+      if (nuevoJ < 0) return false;
+      return grafo.getNodoValue(nuevoI, nuevoJ).valor === '.';
     }
     return false;
   } else { // Vertical
-    if (dir === 'abajo') {
+    if (direccion === 'abajo') {
       const last = carro.posiciones[carro.posiciones.length - 1];
-      const ni = last.i + 1, nj = last.j;
-      if (ni >= filas) return false;
-      const val = grafo.getNodoValue(ni, nj).valor;
-      return val === '.' || (val === 'S' && carro.valor === 'B');
+      const nuevoI = last.i + 1, nuevoJ = last.j;
+      if (nuevoI >= filas) return false;
+      const valor = grafo.getNodoValue(nuevoI, nuevoJ).valor;
+      return valor === '.' || (valor === 'S' && carro.valor === 'B');
     }
-    if (dir === 'arriba') {
+    if (direccion === 'arriba') {
       const first = carro.posiciones[0];
-      const ni = first.i - 1, nj = first.j;
-      if (ni < 0) return false;
-      return grafo.getNodoValue(ni, nj).valor === '.';
+      const nuevoI = first.i - 1, nuevoJ = first.j;
+      if (nuevoI < 0) return false;
+      return grafo.getNodoValue(nuevoI, nuevoJ).valor === '.';
     }
     return false;
   }
 }
 
-function moverCarro(grafo, carro, dir) {
+function moverCarro(grafo, carro, direccion) {
   let nuevas = [];
   if (carro.orientacion === 'H') {
-    if (dir === 'derecha') nuevas = carro.posiciones.map(p => ({ i: p.i, j: p.j + 1 }));
-    else if (dir === 'izquierda') nuevas = carro.posiciones.map(p => ({ i: p.i, j: p.j - 1 }));
+    if (direccion === 'derecha') nuevas = carro.posiciones.map(pos => ({ i: pos.i, j: pos.j + 1 }));
+    else if (direccion === 'izquierda') nuevas = carro.posiciones.map(pos => ({ i: pos.i, j: pos.j - 1 }));
     else throw new Error('Dirección inválida para carro horizontal');
   } else {
-    if (dir === 'abajo') nuevas = carro.posiciones.map(p => ({ i: p.i + 1, j: p.j }));
-    else if (dir === 'arriba') nuevas = carro.posiciones.map(p => ({ i: p.i - 1, j: p.j }));
+    if (direccion === 'abajo') nuevas = carro.posiciones.map(pos => ({ i: pos.i + 1, j: pos.j }));
+    else if (direccion === 'arriba') nuevas = carro.posiciones.map(pos => ({ i: pos.i - 1, j: pos.j }));
     else throw new Error('Dirección inválida para carro vertical');
   }
 
   // limpiar posiciones antiguas
-  for (const p of carro.posiciones)
-    grafo.setNodoValue(p.i, p.j, '.');
+  for (const pos of carro.posiciones)
+    grafo.setNodoValue(pos.i, pos.j, '.');
 
   for (let k = 0; k < nuevas.length; k++) {
-    const p = nuevas[k];
+    const pos = nuevas[k];
     if (k === nuevas.length - 1) {
-      if (carro.valor === 'B') grafo.setNodoValue(p.i, p.j, 'B');
-      else if (carro.orientacion === 'H') grafo.setNodoValue(p.i, p.j, '>');
-      else grafo.setNodoValue(p.i, p.j, 'v');
+      if (carro.valor === 'B') grafo.setNodoValue(pos.i, pos.j, 'B');
+      else if (carro.orientacion === 'H') grafo.setNodoValue(pos.i, pos.j, '>');
+      else grafo.setNodoValue(pos.i, pos.j, 'v');
     } else {
-      grafo.setNodoValue(p.i, p.j, carro.orientacion === 'H' ? '-' : '|');
+      grafo.setNodoValue(pos.i, pos.j, carro.orientacion === 'H' ? '-' : '|');
     }
   }
 
@@ -291,9 +315,9 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
   visitados.add(key);
 
   const carros = obtenerTodosLosCarros(grafo);
-  const bCarros = carros.filter(c => c.valor === 'B');
+  const carrosB = carros.filter(c => c.valor === 'B');
 
-  if (bCarros.length === 0) {
+  if (carrosB.length === 0) {
     console.log(`Todos los B salieron en ${movimientos} movimientos.`);
     imprimirMatriz(grafo);
     return movimientos;
@@ -303,11 +327,11 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
 
   for (const carro of carros) {
     const dirs = carro.orientacion === 'H' ? ['izquierda','derecha'] : ['arriba','abajo'];
-    for (const dir of dirs) {
-      if (!puedeMover(grafo, carro, dir)) continue;
+    for (const direccion of dirs) {
+      if (!puedeMover(grafo, carro, direccion)) continue;
 
       const grafoClonado = clonarGrafo(grafo);
-      const carroMovido = moverCarro(grafoClonado, carro, dir);
+      const carroMovido = moverCarro(grafoClonado, carro, direccion);
 
       // Revisar si B llegó a S
       if (carroMovido.valor === 'B') {
@@ -316,14 +340,14 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
             (cabeza.j+1 < grafoClonado.columnas && grafoClonado.getNodoValue(cabeza.i, cabeza.j+1).valor==='S') ||
             (cabeza.i+1 < grafoClonado.filas && grafoClonado.getNodoValue(cabeza.i+1, cabeza.j).valor==='S')) {
           // eliminar B del clon
-          for (const p of carroMovido.posiciones) grafoClonado.setNodoValue(p.i, p.j, '.');
+          for (const pos of carroMovido.posiciones) grafoClonado.setNodoValue(pos.i, pos.j, '.');
           console.log(`B llegó a la salida en ${movimientos+1} movimientos.`);
         }
       }
 
-      console.log(`Moviendo ${carro.valor} hacia ${dir}:`); // CONSOLE DE PRINT
+      console.log(`Moviendo ${carro.valor} hacia ${direccion}:`); // CONSOLE DE PRINT 
       imprimirMatriz(grafoClonado);
-      console.log('-------------------');
+      matriz = grafoAMatriz(grafoClonado);
 
       const r = backtracking(grafoClonado, movimientos+1, limite, visitados);
       if (r !== null && (mejor===null || r<mejor)) mejor = r;
@@ -344,14 +368,14 @@ function puedeColocar(grafo, i, j, orientacion, largo) {
   return true;
 }
 
-function colocarCarroEnGrafo(grafo, i, j, orientacion, largo, esB = false) {
+function colocarCarroEnGrafo(grafo, i, j, orientacion, largo, esCarroB = false) {
   if (orientacion === 'H') {
     for (let k = 0; k < largo-1; k++) grafo.setNodoValue(i,j+k,'-');
-    grafo.setNodoValue(i,j+largo-1, esB?'B':'>');
+    grafo.setNodoValue(i,j+largo-1, esCarroB?'B':'>');
     return true;
   } else {
     for (let k = 0; k < largo-1; k++) grafo.setNodoValue(i+k,j,'|');
-    grafo.setNodoValue(i+largo-1,j, esB?'B':'v');
+    grafo.setNodoValue(i+largo-1,j, esCarroB?'B':'v');
     return true;
   }
 }
@@ -368,7 +392,7 @@ function generarCarrosAleatorios(grafo, numCarros, probB = 0.3) {
     intentos++;
 
     // Decidir si este carro será B
-    const esB = Math.random() < probB;
+    const esCarroB = Math.random() < probB;
     const orient = Math.random() < 0.5 ? 'H' : 'V';
     const largo = 2 + Math.floor(Math.random() * 2); // 2 o 3 celdas
 
@@ -384,7 +408,7 @@ function generarCarrosAleatorios(grafo, numCarros, probB = 0.3) {
     // Verificar si se puede colocar
     if (!puedeColocar(grafo, i, j, orient, largo)) continue;
 
-    if (esB) {
+    if (esCarroB) {
       // Colocar carro B
       colocarCarroEnGrafo(grafo, i, j, orient, largo, true);
 
@@ -409,6 +433,7 @@ function generarCarrosAleatorios(grafo, numCarros, probB = 0.3) {
 
 
 const grafo = new Grafo(6,6);
+let matriz = crearMatriz(6,6);
 console.log('Tablero inicial:')
 imprimirMatriz(grafo);
 generarCarrosAleatorios(grafo,3);
