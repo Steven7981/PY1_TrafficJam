@@ -687,7 +687,8 @@ function generarCarrosAleatorios(grafo, numeroDeCarros) {
         colocado = true;
 
       } else {
-        if (i + longitud - 1 >= filas) continue;
+        if (i + longitud - 1 >= filas) 
+            continue;
         let libre = true;
         for (let k = 0; k < longitud; k++) {
           if (!grafo.getNodoValue(i + k, j) || grafo.getNodoValue(i + k, j).valor !== '.') libre = false;
