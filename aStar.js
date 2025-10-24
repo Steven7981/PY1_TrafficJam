@@ -532,8 +532,8 @@ function colocarCarroEnGrafo(grafo, i, j, orientacion, largo, esCarroB = false) 
 
 function generarCarrosAleatorios(grafo) {
   // Limpiar tablero
-  let filas = grafo.getFilas();
-  let cols = grafo.getColumnas();
+  const filas = grafo.getFilas();
+  const cols = grafo.getColumnas();
   for (let i = 0; i < filas; i++) {
     for (let j = 0; j < cols; j++) {
       grafo.setNodoValue(i, j, '.');
@@ -559,11 +559,16 @@ function generarCarrosAleatorios(grafo) {
       const i = Math.floor(Math.random() * filas);
       const j = Math.floor(Math.random() * cols);
 
-      // Verificamos límites
-      if (orientacion === 'H') {
-        if (j + longitud - 1 >= cols) continue; // se sale a la derecha
+      //Evitar que el carro B aparezca en las esquinas 
+      if (valor === 'B' && (
+        (i === 0 && j === 0) || (i === 0 && j === cols - 1) ||
+        (i === filas - 1 && j === 0) || (i === filas - 1 && j === cols - 1)
+      )) continue;
 
-        // Verificamos que todas las posiciones estén vacías
+      if (orientacion === 'H') {
+        if (j + longitud - 1 >= cols) continue;
+
+        // Verificar celdas vacías
         let libre = true;
         for (let k = 0; k < longitud; k++) {
           if (!grafo.getNodoValue(i, j + k) || grafo.getNodoValue(i, j + k).valor !== '.') {
@@ -578,16 +583,23 @@ function generarCarrosAleatorios(grafo) {
         grafo.setNodoValue(i, j + longitud - 1, valor === 'B' ? 'B' : '>');
         colocado = true;
 
-        // Si es B, colocar salida S en el borde de su fila
+        // Colocar salida S si es B
         if (valor === 'B') {
-          const lado = Math.random() < 0.5 ? 'izquierda' : 'derecha';
-          const borde = lado === 'izquierda' ? 0 : cols - 1;
-          grafo.setNodoValue(i, borde, 'S');
+          let colocadoS = false;
+          const lados = ['izquierda', 'derecha'];
+          while (!colocadoS && lados.length > 0) {
+            const lado = lados.splice(Math.floor(Math.random() * lados.length), 1)[0];
+            const borde = lado === 'izquierda' ? 0 : cols - 1;
+            if (grafo.getNodoValue(i, borde).valor === '.') {
+              grafo.setNodoValue(i, borde, 'S');
+              colocadoS = true;
+            }
+          }
           hayB = true;
         }
 
       } else { // Vertical
-        if (i + longitud - 1 >= filas) continue; // se sale abajo
+        if (i + longitud - 1 >= filas) continue;
 
         let libre = true;
         for (let k = 0; k < longitud; k++) {
@@ -602,22 +614,28 @@ function generarCarrosAleatorios(grafo) {
         grafo.setNodoValue(i + longitud - 1, j, valor === 'B' ? 'B' : 'v');
         colocado = true;
 
-        // Si es B, colocar salida S en el borde de su columna
+        // Colocar salida S si es B
         if (valor === 'B') {
-          const lado = Math.random() < 0.5 ? 'arriba' : 'abajo';
-          const borde = lado === 'arriba' ? 0 : filas - 1;
-          grafo.setNodoValue(borde, j, 'S');
+          let colocadoS = false;
+          const lados = ['arriba', 'abajo'];
+          while (!colocadoS && lados.length > 0) {
+            const lado = lados.splice(Math.floor(Math.random() * lados.length), 1)[0];
+            const borde = lado === 'arriba' ? 0 : filas - 1;
+            if (grafo.getNodoValue(borde, j).valor === '.') {
+              grafo.setNodoValue(borde, j, 'S');
+              colocadoS = true;
+            }
+          }
           hayB = true;
         }
       }
     }
   }
 
-  // Si no se logró colocar ningún B, forzamos uno
+  // Si no se colocó ningún B, forzamos que siempre haya uno
   if (!hayB) {
     const orientacion = Math.random() < 0.5 ? 'H' : 'V';
     const longitud = Math.random() < 0.5 ? 2 : 3;
-
     let colocado = false;
     let intentos = 0;
 
@@ -625,6 +643,10 @@ function generarCarrosAleatorios(grafo) {
       intentos++;
       const i = Math.floor(Math.random() * filas);
       const j = Math.floor(Math.random() * cols);
+
+      // evitar que B aparezca en esquinas
+      if ((i === 0 && j === 0) || (i === 0 && j === cols - 1) ||
+          (i === filas - 1 && j === 0) || (i === filas - 1 && j === cols - 1)) continue;
 
       if (orientacion === 'H') {
         if (j + longitud - 1 >= cols) continue;
@@ -636,7 +658,14 @@ function generarCarrosAleatorios(grafo) {
 
         for (let k = 0; k < longitud - 1; k++) grafo.setNodoValue(i, j + k, '-');
         grafo.setNodoValue(i, j + longitud - 1, 'B');
-        grafo.setNodoValue(i, cols - 1, 'S');
+
+        // Colocar salida S en borde disponible
+        if (grafo.getNodoValue(i, cols - 1).valor === '.') {
+          grafo.setNodoValue(i, cols - 1, 'S');
+        } else if (grafo.getNodoValue(i, 0).valor === '.') {
+          grafo.setNodoValue(i, 0, 'S');
+        }
+
         colocado = true;
 
       } else {
@@ -649,13 +678,19 @@ function generarCarrosAleatorios(grafo) {
 
         for (let k = 0; k < longitud - 1; k++) grafo.setNodoValue(i + k, j, '|');
         grafo.setNodoValue(i + longitud - 1, j, 'B');
-        grafo.setNodoValue(filas - 1, j, 'S');
+
+        // Colocar salida S en borde disponible
+        if (grafo.getNodoValue(filas - 1, j).valor === '.') {
+          grafo.setNodoValue(filas - 1, j, 'S');
+        } else if (grafo.getNodoValue(0, j).valor === '.') {
+          grafo.setNodoValue(0, j, 'S');
+        }
+
         colocado = true;
       }
     }
   }
 }
-
 
 
 
