@@ -305,7 +305,7 @@ function bfsEnMatriz(matriz, metas, maxMovimientos = 100) {
             visitados.add(serial) // Agregar a visitados
             estadosExplorados++ // Incrementar contador
 
-            console.log(`Se mueve el auto de (${auto.cabeza[0]},${auto.cabeza[1]}) a ${direccion}`) 
+            //console.log(`Se mueve el auto de (${auto.cabeza[0]},${auto.cabeza[1]}) a ${direccion}`) 
             //imprimirMatriz(nuevaMatriz) 
 
             const nuevaSecuencia = [...secuencia, copiarMatriz(nuevaMatriz)] // Extender secuencia
@@ -321,6 +321,92 @@ function bfsEnMatriz(matriz, metas, maxMovimientos = 100) {
   return null 
 }
 
+/**
+ * Funcion que imprime las matrices junto a los movimeintos hechos
+ * @param {Array<Array<Array<string>>>} listaDeMatrices Lista de matrices que representan los estados finales del tablero
+ */
+function mostrarSecuenciaDeMatrices(listaDeMatrices) {
+
+  function imprimirMatriz(matriz) {
+    for (const fila of matriz) {
+      console.log(fila.join(" "))
+    }
+    console.log("--------------------------")
+  }
+
+  // Busca las posiciones de todas las cabezas de los autos
+  function buscarCabezas(matriz) {
+    const cabezas = []
+    for (let fila = 0; fila < matriz.length; fila++) {
+      for (let columna = 0; columna < matriz[fila].length; columna++) {
+        const celda = matriz[fila][columna]
+        if (celda === ">" || celda === "v" || celda === "B") {
+          cabezas.push({ fila, columna, simbolo: celda })
+        }
+      }
+    }
+    return cabezas
+  }
+
+  // Encuentra la cabeza más cercana en la siguiente matriz
+  function encontrarMasCercano(origen, lista) {
+    let menorDistancia = Infinity
+    let masCercano = null
+    for (const punto of lista) {
+      const distancia = Math.abs(punto.fila - origen.fila) + Math.abs(punto.columna - origen.columna)
+      if (distancia < menorDistancia) {
+        menorDistancia = distancia
+        masCercano = punto
+      }
+    }
+    return masCercano
+  }
+
+  console.log("Estado inicial:")
+  imprimirMatriz(listaDeMatrices[0])
+
+  // Compara cada par de matrices consecutivas
+  for (let paso = 0; paso < listaDeMatrices.length - 1; paso++) {
+    const matrizActual = listaDeMatrices[paso]
+    const matrizSiguiente = listaDeMatrices[paso + 1]
+
+    const cabezasAntes = buscarCabezas(matrizActual)
+    const cabezasDespues = buscarCabezas(matrizSiguiente)
+
+    let cabezaAnterior = null
+    let cabezaNueva = null
+
+    // Buscar cuál cabeza cambió de posición
+    for (const cabeza of cabezasAntes) {
+      const sigueIgual = cabezasDespues.find(
+        c => c.simbolo === cabeza.simbolo && c.fila === cabeza.fila && c.columna === cabeza.columna
+      )
+      if (!sigueIgual) {
+        cabezaAnterior = cabeza
+        cabezaNueva = encontrarMasCercano(cabeza, cabezasDespues.filter(c => c.simbolo === cabeza.simbolo))
+        break
+      }
+    }
+
+    if (!cabezaAnterior || !cabezaNueva) continue
+
+    // Dirección del movimiento
+    let direccion = ""
+    if (cabezaNueva.fila === cabezaAnterior.fila) {
+      direccion = cabezaNueva.columna > cabezaAnterior.columna ? "derecha" : "izquierda"
+    } else {
+      direccion = cabezaNueva.fila > cabezaAnterior.fila ? "abajo" : "arriba"
+    }
+
+    console.log( `Movimiento ${paso + 1}: El auto que estaba en (${cabezaAnterior.fila},${cabezaAnterior.columna}) se movió hacia ${direccion}` )
+    imprimirMatriz(matrizSiguiente)
+  }
+
+  console.log("Fin de la secuencia de movimientos")
+}
+
+
+
 // Prueba
 let matriz = [
   [".", ".", ".", "-", "-", ">", "."],
@@ -330,18 +416,12 @@ let matriz = [
   ["v", ".", "-", "B", ".", ".", "v"],
   [".", ".", ".", ".", ".", ".", "."]
 ]
+
 console.log(verificarMatriz(matriz))
 let metas = [[4, 6]]
 
 
-const secuenciaSolucion = bfsEnMatriz(matriz, metas);
+const resultado = bfsEnMatriz(matriz, metas)
 
-if (secuenciaSolucion) {
-  console.log("Lista de matrices de la secuencia:")
-  console.log(secuenciaSolucion) 
-} else {
-  console.log("No se encontró solución")
-}
-
-
+mostrarSecuenciaDeMatrices(resultado)
 
