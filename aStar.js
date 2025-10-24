@@ -117,9 +117,8 @@ function obtenerTodosLosCarros(grafo) {
       // Carro principal B
       if (v === 'B') {
         const arriba = i > 0 ? grafo.getNodoValue(i - 1, j).valor : null;
-        const abajo = i < filas - 1 ? grafo.getNodoValue(i + 1, j).valor : null;
         const izquierda = j > 0 ? grafo.getNodoValue(i, j - 1).valor : null;
-        const derecha = j < cols - 1 ? grafo.getNodoValue(i, j + 1).valor : null;
+        
 
         let orientacion = 'H';
         if (arriba === '|' || abajo === '|') orientacion = 'V';
@@ -317,19 +316,21 @@ function clonarGrafo(grafo) {
   return nuevo;
 }
 
-// ====== A* Search ======
+//funcion para serializar el grafo, para evitar explorar estados ya vistos
 function serializarGrafo(grafo) {
   return grafo.aMatriz().flat().join('');
 }
 
+//funcion para calucular cuantos pasos hay entre la cabeza del carro B hastra S
 function heuristica(carroB, salida) {
   // Distancia Manhattan de la cabeza de B a su salida
   const cabeza = carroB.posiciones[carroB.posiciones.length - 1];
   return Math.abs(cabeza.i - salida.i) + Math.abs(cabeza.j - salida.j);
 }
 
+//funcion para buscar si queda algun B pendiente en el tablero
 function estadoMeta(grafo) {
-  // Meta: ya no hay ningún carro B en el grafo
+  
   for (let i = 0; i < grafo.filas; i++) {
     for (let j = 0; j < grafo.columnas; j++) {
       const val = grafo.getNodoValue(i, j);
@@ -343,6 +344,7 @@ function AEstrella(grafoInicial) {
   const abiertos = [];
   const visitados = new Set();
 
+  // lista para guardar cada movimiento que hace B con sus respectivos datos
   abiertos.push({
     grafo: clonarGrafo(grafoInicial),
     g: 0,
@@ -351,15 +353,19 @@ function AEstrella(grafoInicial) {
     movimientos: []
   });
 
+  //se elige el f mas abajo, en donde f es g (costo acumulado hasta el movimiento actual, en este caso cantidad de movimientos) + h (heurisitca)
   while (abiertos.length > 0) {
     abiertos.sort((a, b) => a.f - b.f);
     const actual = abiertos.shift();
 
+    //verificar si ya todos los B ya salieron
     if (estadoMeta(actual.grafo)) {
       console.log("Todos los B salieron del tablero");
 
       // Agrupar movimientos por carro para la salida tipo lista
       const movimientosPorCarro = {};
+
+      // actual representa el estado completo del tablero en este paso, incluyendo todas las posiciones de los carros y los movimientos que llevaron a este estado.
 
       actual.movimientos.forEach((mov, index) => {
         if (!movimientosPorCarro[mov.carro]) movimientosPorCarro[mov.carro] = [];
@@ -383,29 +389,35 @@ function AEstrella(grafoInicial) {
       return actual.movimientos;
     }
 
+    //serializamos el grafo para evitar explorarlo mas adelante
     const key = serializarGrafo(actual.grafo);
     if (visitados.has(key)) continue;
     visitados.add(key);
 
+    //obtener todos los carros e ir moviendo uno por uno
     const carros = obtenerTodosLosCarros(actual.grafo);
 
-    for (const carro of carros) {
+    for (const carro of carros) { // determinar la orientacion del carro
       const direcciones = carro.orientacion === 'H'
         ? ['izquierda', 'derecha']
         : ['arriba', 'abajo'];
 
+        //determinar si e carro se puede mover
       for (const dir of direcciones) {
-        if (!puedeMover(actual.grafo, carro, dir)) continue;
+        if (!puedeMover(actual.grafo, carro, dir)) 
+            continue;
 
         const ultimaPos = carro.posiciones[carro.posiciones.length - 1];
         let nextI = ultimaPos.i;
         let nextJ = ultimaPos.j;
 
+        //determinar la nueva posicion de la cabeza
         if (dir === 'derecha') nextJ++;
         if (dir === 'izquierda') nextJ--;
         if (dir === 'arriba') nextI--;
         if (dir === 'abajo') nextI++;
 
+        //revisar si el siguiente nodo es la salida (S)
         const siguienteNodo =
           nextI >= 0 && nextI < actual.grafo.filas &&
           nextJ >= 0 && nextJ < actual.grafo.columnas
@@ -415,6 +427,7 @@ function AEstrella(grafoInicial) {
         const nuevo = clonarGrafo(actual.grafo);
         const carroMovido = moverCarro(nuevo, carro, dir);
 
+        //si fuese que el siguiente nodo es S y es un carro B, se limpia el carro B del tablero
         if (carro.valor === 'B' && siguienteNodo && siguienteNodo.valor === 'S') {
           for (const p of carroMovido.posiciones) {
             nuevo.setNodoValue(p.i, p.j, '.');
@@ -424,13 +437,15 @@ function AEstrella(grafoInicial) {
         const keyNuevo = serializarGrafo(nuevo);
         if (visitados.has(keyNuevo)) continue;
 
+        //aumentamos el costo g
         const g = actual.g + 1;
 
+        //saca una nueva lista de todos los carros pero que sean solo B para poder calcular la heuristica
         const Bs = obtenerTodosLosCarros(nuevo).filter(c => c.valor === 'B');
         let h = 0;
         if (Bs.length > 0) {
           const salidas = [];
-          for (let i = 0; i < nuevo.filas; i++) {
+          for (let i = 0; i < nuevo.filas; i++) { // buscamos todas las posiciones de S si fuese que hay varias y calcular el mas cercano a B
             for (let j = 0; j < nuevo.columnas; j++) {
               const val = nuevo.getNodoValue(i, j).valor;
               if (val === 'S') salidas.push({ i, j });
@@ -441,6 +456,8 @@ function AEstrella(grafoInicial) {
 
         const f = g + h;
 
+        //Agrega a la lista de nodos abiertos el nuevo tablero resultante de mover un carro, 
+        // con su costo acumulado g, la heurística h, la puntuación total f y el historial de movimientos hasta ese punto
         abiertos.push({
           grafo: nuevo,
           g,
@@ -462,12 +479,13 @@ function maxAdvance(grafo, carro, direccion) {
   let pasos = 0;
 
   if (carro.orientacion === 'H') {
+    // si el carro es Horizontal, se busca los movimientos hacia derecha e izq
     if (direccion === 'derecha') {
-      let j = carro.posiciones[carro.posiciones.length - 1].j + 1;
-      const i = carro.posiciones[0].i;
+      let j = carro.posiciones[carro.posiciones.length - 1].j + 1; //j es la columna de la cabeza +1
+      const i = carro.posiciones[0].i; //i es la fila en donde se encuentra
       while (j < cols) {
         const val = grafo.getNodoValue(i, j).valor;
-        if (val === '.' || (val === 'S' && carro.valor === 'B')) {
+        if (val === '.' || (val === 'S' && carro.valor === 'B')) { //mientras sea . avanza, pero si se encuentra S, para pero avanza si estamos con carro B
           pasos++;
           if (val === 'S') break; // puede entrar y terminar
           j++;
@@ -530,7 +548,7 @@ function colocarCarroEnGrafo(grafo, i, j, orientacion, largo, esCarroB = false) 
   }
 }
 
-function generarCarrosAleatorios(grafo) {
+function generarCarrosAleatorios(grafo, numeroDeCarros) {
   // Limpiar tablero
   const filas = grafo.getFilas();
   const cols = grafo.getColumnas();
@@ -540,7 +558,7 @@ function generarCarrosAleatorios(grafo) {
     }
   }
 
-  const totalCarros = Math.floor(Math.random() * 4) + 3; // entre 3 y 6 carros
+  const totalCarros = numeroDeCarros;
   let hayB = false;
 
   for (let n = 0; n < totalCarros; n++) {

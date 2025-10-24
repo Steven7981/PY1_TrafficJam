@@ -114,7 +114,7 @@ function obtenerTodosLosCarros(grafo) {
         const arriba = i > 0 ? grafo.getNodoValue(i - 1, j).valor : null;
         
         
-        const derecha = j < cols - 1 ? grafo.getNodoValue(i, j + 1).valor : null;
+        const izquierda = j > 0 ? grafo.getNodoValue(i, j - 1).valor : null;
 
         //revisar las celdas arriba e izquierda para ver que orientacion tiene este carro
         let orientacion = 'H';
@@ -330,6 +330,7 @@ function clonarGrafo(grafo) {
 function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set()) {
   if (movimientos > limite) return null;
 
+  //serializamos el grafo de manera que se genere una llave, de esta manera, evitamos que se revise estados ya explorados
   const key = grafo.aMatriz().flat().join('');
   if (visitados.has(key)) return null;
   visitados.add(key);
@@ -345,11 +346,13 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
 
   let mejor = null;
 
+  //itera cada carro determinando cada posible movimiento que puede realizar
   for (const carro of carros) {
     const dirs = carro.orientacion === 'H' ? ['izquierda','derecha'] : ['arriba','abajo'];
     for (const direccion of dirs) {
-      if (!puedeMover(grafo, carro, direccion)) continue;
-
+      if (!puedeMover(grafo, carro, direccion)) 
+        continue;
+      //clonamos el grafo antes de mover para evitar modificar el original y perder el estado anterior
       const grafoClonado = clonarGrafo(grafo);
       const carroMovido = moverCarro(grafoClonado, carro, direccion);
 
@@ -409,6 +412,7 @@ function colocarCarroEnGrafo(grafo, i, j, orientacion, largo, esCarroB = false) 
   }
 }
 
+//funcion para generar carros aleatorios en la matriz, recibiendo el grafo a insertar y la cantidad de carros
 function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
   const filas = grafo.filas;
   const cols = grafo.columnas;
@@ -430,31 +434,32 @@ function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
     }
   }
 
-  function colocarCarroEnGrafo(i, j, orientacion, largo, esB = false) {
+  function colocarCarroEnGrafo(i, j, orientacion, largo, esCarroB = false) {
     if (orientacion === 'H') {
       for (let k = 0; k < largo - 1; k++) grafo.setNodoValue(i, j + k, '-');
-      grafo.setNodoValue(i, j + largo - 1, esB ? 'B' : '>');
+      grafo.setNodoValue(i, j + largo - 1, esCarroB ? 'B' : '>');
     } else {
       for (let k = 0; k < largo - 1; k++) grafo.setNodoValue(i + k, j, '|');
-      grafo.setNodoValue(i + largo - 1, j, esB ? 'B' : 'v');
+      grafo.setNodoValue(i + largo - 1, j, esCarroB ? 'B' : 'v');
     }
   }
 
-  // limpiar tablero
+  // limpiar tablero antes de generar carros, solo se llama una vez
   for (let i = 0; i < filas; i++)
     for (let j = 0; j < cols; j++)
       grafo.setNodoValue(i, j, '.');
 
   const posicionesS = new Set();
 
-  
+  // genera un carro B minimo
   let carrosBColocados = 0, intentos = 0;
   while (carrosBColocados < 1 && intentos < maxIntentos) {
     intentos++;
-
+    //determinar de forma aleatoria si el carro B es horizontal o vertical, al igual su espacio
     const orientacion = Math.random() < 0.5 ? 'H' : 'V';
     const largo = 2 + Math.floor(Math.random() * 2);
     let i, j;
+
 
     if (orientacion === 'H') {
       i = Math.floor(Math.random() * filas);
@@ -484,7 +489,7 @@ function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
     carrosBColocados++;
   }
 
-  if (carrosBColocados < 1) console.warn('⚠️ No se pudo colocar B con S correctamente.');
+  if (carrosBColocados < 1) console.warn('No se pudo colocar B con S correctamente.');
 
   // colocamos los otros carros
   let colocados = 0;
@@ -492,7 +497,7 @@ function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
   while (colocados < numeroDeCarros && intentos < maxIntentos) {
     intentos++;
 
-    const esB = Math.random() < probB;
+    const esCarroB = Math.random() < probB;
     const orientacion = Math.random() < 0.5 ? 'H' : 'V';
     const largo = 2 + Math.floor(Math.random() * 2);
 
@@ -505,9 +510,11 @@ function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
       j = Math.floor(Math.random() * cols);
     }
 
-    if (!rangoLibre(i, j, orientacion, largo)) continue;
+    // si no hay espacio libre para ingresar el carro, se descarta
+    if (!rangoLibre(i, j, orientacion, largo)) 
+      continue; // se sale del while
 
-    if (esB) {
+    if (esCarroB) {
       let iDeS, jDeS;
       if (orientacion === 'H') {
         iDeS = i;
