@@ -79,6 +79,7 @@ function crearMatriz(n, m) {
   return matriz;
 }
 
+let matrizVisual = [];
 // Función para convertir un grafo a una matriz
 function grafoAMatriz(grafo) {
   const matriz = [];
@@ -433,7 +434,9 @@ function AEstrella(grafoInicial) {
             nuevo.setNodoValue(p.i, p.j, '.');
           }
         }
-
+        
+        matrizVisual = grafoAMatriz(nuevo);
+        
         const keyNuevo = serializarGrafo(nuevo);
         if (visitados.has(keyNuevo)) continue;
 
