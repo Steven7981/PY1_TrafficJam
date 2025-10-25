@@ -59,6 +59,18 @@ class Grafo {
   }
 }
 
+let matrizVisual = [];
+
+function imprimirMatriz(matriz){
+  for (let i = 0; i < matriz.length; i++) {
+    let filaStr = '';
+    for (let j = 0; j < matriz[i].length; j++) {
+      filaStr += matriz[i][j] + ' '; // agrega cada celda con espacio
+    }
+    console.log(filaStr.trim()); // imprime la fila completa
+  }
+}
+
 function crearMatriz(n, m) {
   const matriz = [];
   for (let i = 0; i < n; i++) {
@@ -85,7 +97,7 @@ function grafoAMatriz(grafo) {
 }
 
 
-function imprimirMatriz(grafo) {
+function imprimirGrafo(grafo) {
   const matriz = grafo.aMatriz();
   for (const fila of matriz) console.log(fila.join(' '));
   console.log('');
@@ -340,7 +352,7 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
 
   if (carrosB.length === 0) {
     console.log(`Todos los B salieron en ${movimientos} movimientos.`);
-    imprimirMatriz(grafo);
+    imprimirGrafo(grafo);
     return movimientos;
   }
 
@@ -369,8 +381,9 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
       }
 
       console.log(`Moviendo ${carro.valor} hacia ${direccion}:`); // CONSOLE DE PRINT 
-      imprimirMatriz(grafoClonado);
-      matriz = grafoAMatriz(grafoClonado);
+      imprimirGrafo(grafoClonado);
+
+      matrizVisual = grafoAMatriz(grafoClonado);
 
       const r = backtracking(grafoClonado, movimientos+1, limite, visitados);
       if (r !== null && (mejor===null || r<mejor)) mejor = r;
@@ -542,10 +555,10 @@ function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
 const grafo = new Grafo(6,6);
 let matriz = crearMatriz(6,6);
 console.log('Tablero inicial:')
-imprimirMatriz(grafo);
+imprimirGrafo(grafo);
 generarCarrosAleatorios(grafo,3);
 console.log('Tablero con carros aleatorios:')
-imprimirMatriz(grafo);
+imprimirGrafo(grafo);
 
 const total = backtracking(grafo);
 console.log(total===null?'No hay solución':`Total de movimientos: ${total}`);

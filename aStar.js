@@ -80,6 +80,16 @@ function crearMatriz(n, m) {
 }
 
 let matrizVisual = [];
+
+function imprimirMatriz(matriz){
+  for (let i = 0; i < matriz.length; i++) {
+    let filaStr = '';
+    for (let j = 0; j < matriz[i].length; j++) {
+      filaStr += matriz[i][j] + ' '; // agrega cada celda con espacio
+    }
+    console.log(filaStr.trim()); // imprime la fila completa
+  }
+}
 // Función para convertir un grafo a una matriz
 function grafoAMatriz(grafo) {
   const matriz = [];
@@ -94,7 +104,7 @@ function grafoAMatriz(grafo) {
 }
 
 
-function imprimirMatriz(grafo) {
+function imprimirGrafo(grafo) {
   const matriz = grafo.aMatriz();
   for (const fila of matriz) console.log(fila.join(' '));
   console.log('');
@@ -437,6 +447,7 @@ function AEstrella(grafoInicial) {
         
         matrizVisual = grafoAMatriz(nuevo);
         
+        
         const keyNuevo = serializarGrafo(nuevo);
         if (visitados.has(keyNuevo)) continue;
 
@@ -720,7 +731,7 @@ const grafo = new Grafo(6, 6);
 generarCarrosAleatorios(grafo, 4);
 
 console.log("Tablero inicial:");
-imprimirMatriz(grafo);
+imprimirGrafo(grafo);
 
 const solucion = AEstrella(grafo);
 
