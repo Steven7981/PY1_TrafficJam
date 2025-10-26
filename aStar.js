@@ -541,16 +541,7 @@ function maxAdvance(grafo, carro, direccion) {
 
   return pasos; // 0 significa que no puede moverse
 }
-function puedeColocar(grafo, i, j, orientacion, largo) {
-  if (orientacion === 'H') {
-    if (j + largo - 1 >= grafo.columnas) return false;
-    for (let x = 0; x < largo; x++) if (grafo.getNodoValue(i,j+x).valor !== '.') return false;
-  } else {
-    if (i + largo - 1 >= grafo.filas) return false;
-    for (let x = 0; x < largo; x++) if (grafo.getNodoValue(i+x,j).valor !== '.') return false;
-  }
-  return true;
-}
+
 
 function colocarCarroEnGrafo(grafo, i, j, orientacion, largo, esCarroB = false) {
   if (orientacion === 'H') {
