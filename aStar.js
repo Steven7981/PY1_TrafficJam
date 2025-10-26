@@ -446,6 +446,8 @@ function AEstrella(grafoInicial) {
         }
         
         matrizVisual = grafoAMatriz(nuevo);
+    //    imprimirMatriz(matrizVisual);
+      //  console.log('')
         
         
         const keyNuevo = serializarGrafo(nuevo);
@@ -649,17 +651,31 @@ function generarCarrosAleatorios(grafo, numeroDeCarros) {
         // Colocar salida S si es B
         if (valor === 'B') {
           let colocadoS = false;
-          const lados = ['arriba', 'abajo'];
-          while (!colocadoS && lados.length > 0) {
-            const lado = lados.splice(Math.floor(Math.random() * lados.length), 1)[0];
-            const borde = lado === 'arriba' ? 0 : filas - 1;
-            if (grafo.getNodoValue(borde, j).valor === '.') {
-              grafo.setNodoValue(borde, j, 'S');
+          let iDeS, jDeS;
+
+          if (orientacion === 'H') {
+            
+            iDeS = i;
+            jDeS = cols - 1;
+
+            if (grafo.getNodoValue(iDeS, jDeS).valor === '.') {
+              grafo.setNodoValue(iDeS, jDeS, 'S');
+              colocadoS = true;
+            }
+          } else { // Vertical
+            
+            iDeS = filas - 1;
+            jDeS = j;
+
+            if (grafo.getNodoValue(iDeS, jDeS).valor === '.') {
+              grafo.setNodoValue(iDeS, jDeS, 'S');
               colocadoS = true;
             }
           }
+
           hayB = true;
         }
+
       }
     }
   }
@@ -691,13 +707,8 @@ function generarCarrosAleatorios(grafo, numeroDeCarros) {
         for (let k = 0; k < longitud - 1; k++) grafo.setNodoValue(i, j + k, '-');
         grafo.setNodoValue(i, j + longitud - 1, 'B');
 
-        // Colocar salida S en borde disponible
-        if (grafo.getNodoValue(i, cols - 1).valor === '.') {
-          grafo.setNodoValue(i, cols - 1, 'S');
-        } else if (grafo.getNodoValue(i, 0).valor === '.') {
-          grafo.setNodoValue(i, 0, 'S');
-        }
-
+        
+        grafo.setNodoValue(i, cols - 1, 'S');
         colocado = true;
 
       } else {
@@ -712,12 +723,8 @@ function generarCarrosAleatorios(grafo, numeroDeCarros) {
         for (let k = 0; k < longitud - 1; k++) grafo.setNodoValue(i + k, j, '|');
         grafo.setNodoValue(i + longitud - 1, j, 'B');
 
-        // Colocar salida S en borde disponible
-        if (grafo.getNodoValue(filas - 1, j).valor === '.') {
-          grafo.setNodoValue(filas - 1, j, 'S');
-        } else if (grafo.getNodoValue(0, j).valor === '.') {
-          grafo.setNodoValue(0, j, 'S');
-        }
+        
+        grafo.setNodoValue(filas - 1, j, 'S');
 
         colocado = true;
       }

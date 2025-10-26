@@ -370,15 +370,31 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
 
       // Revisar si B llegó a S
       if (carroMovido.valor === 'B') {
-        const cabeza = carroMovido.posiciones[carroMovido.posiciones.length-1];
-        if (grafoClonado.getNodoValue(cabeza.i, cabeza.j).valor === 'S' ||
-            (cabeza.j+1 < grafoClonado.columnas && grafoClonado.getNodoValue(cabeza.i, cabeza.j+1).valor==='S') ||
-            (cabeza.i+1 < grafoClonado.filas && grafoClonado.getNodoValue(cabeza.i+1, cabeza.j).valor==='S')) {
+        let cabeza = carroMovido.posiciones[carroMovido.posiciones.length - 1];
+
+        let llegaSalida = false;
+
+        if (carroMovido.orientacion === 'H') {
+          // revisar solo la celda adelante (derecha) en la misma fila
+          if (cabeza.j + 1 < grafoClonado.columnas &&
+              grafoClonado.getNodoValue(cabeza.i, cabeza.j + 1).valor === 'S') {
+            llegaSalida = true;
+          }
+        } else { // Vertical
+          // revisar solo la celda adelante (abajo) en la misma columna
+          if (cabeza.i + 1 < grafoClonado.filas &&
+              grafoClonado.getNodoValue(cabeza.i + 1, cabeza.j).valor === 'S') {
+            llegaSalida = true;
+          }
+        }
+
+        if (llegaSalida) {
           // eliminar B del clon
           for (const pos of carroMovido.posiciones) grafoClonado.setNodoValue(pos.i, pos.j, '.');
-          console.log(`B llegó a la salida en ${movimientos+1} movimientos.`);
+          console.log(`B llegó a la salida en ${movimientos + 1} movimientos.`);
         }
       }
+
 
       console.log(`Moviendo ${carro.valor} hacia ${direccion}:`); // CONSOLE DE PRINT 
       imprimirGrafo(grafoClonado);
@@ -393,37 +409,7 @@ function backtracking(grafo, movimientos = 0, limite = 2000, visitados = new Set
   return mejor;
 }
 
-//funcion para verificar de que si es H, la siguiente posicion o anterior sea . , al igual que V, arriba y abajo sea .
-function puedeColocar(grafo, i, j, orientacion, largo) {
-  if (orientacion === 'H') {
-    if (j + largo - 1 >= grafo.columnas) 
-      return false;
-    for (let x = 0; x < largo; x++) 
-      if (grafo.getNodoValue(i,j+x).valor !== '.') 
-        return false;
-  } else {
-    if (i + largo - 1 >= grafo.filas) 
-      return false;
-    for (let x = 0; x < largo; x++) 
-      if (grafo.getNodoValue(i+x,j).valor !== '.') 
-        return false;
-  }
-  return true;
-}
 
-function colocarCarroEnGrafo(grafo, i, j, orientacion, largo, esCarroB = false) {
-  if (orientacion === 'H') {
-    for (let k = 0; k < largo-1; k++) 
-      grafo.setNodoValue(i,j+k,'-');
-    grafo.setNodoValue(i,j+largo-1, esCarroB?'B':'>');
-    return true;
-  } else {
-    for (let k = 0; k < largo-1; k++) 
-      grafo.setNodoValue(i+k,j,'|');
-    grafo.setNodoValue(i+largo-1,j, esCarroB?'B':'v');
-    return true;
-  }
-}
 
 //funcion para generar carros aleatorios en la matriz, recibiendo el grafo a insertar y la cantidad de carros
 function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
@@ -488,11 +474,11 @@ function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
     let iDeS, jDeS;
     if (orientacion === 'H') {
       iDeS = i;
-      jDeS = (Math.random() < 0.5) ? 0 : cols - 1;
+      jDeS = cols - 1;
       if (!libre(iDeS, jDeS)) continue;
     } else {
       jDeS = j;
-      iDeS = (Math.random() < 0.5) ? 0 : filas - 1;
+      iDeS = filas - 1;
       if (!libre(iDeS, jDeS)) continue;
     }
 
@@ -532,10 +518,26 @@ function generarCarrosAleatorios(grafo, numeroDeCarros, probB = 0.3) {
       if (orientacion === 'H') {
         iDeS = i;
         jDeS = (Math.random() < 0.5) ? 0 : cols - 1;
+        if (grafo.getNodoValue(iDeS,jDeS)!= '.')
+          if (jDeS == 0){
+            jDeS = cols -1;
+          }
+          else {
+            jDeS = 0;
+          }
+          
         if (!libre(iDeS, jDeS)) continue;
       } else {
         jDeS = j;
         iDeS = (Math.random() < 0.5) ? 0 : filas - 1;
+        if (grafo.getNodoValue(iDeS,jDeS) != '.'){
+          if (iDeS == 0){
+            iDeS = filas - 1;
+          }
+          else{
+            iDeS = 0;
+          }
+        }
         if (!libre(iDeS, jDeS)) continue;
       }
 
