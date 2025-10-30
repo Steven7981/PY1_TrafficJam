@@ -680,9 +680,9 @@ function generarCarrosAleatorios(grafo, numeroDeCarros) {
         // Colocar salida S en borde disponible
         if (grafo.getNodoValue(i, cols - 1).valor === '.') {
           grafo.setNodoValue(i, cols - 1, 'S');
-        } else if (grafo.getNodoValue(i, 0).valor === '.') {
+        } /*else if (grafo.getNodoValue(i, 0).valor === '.') {
           grafo.setNodoValue(i, 0, 'S');
-        }
+        }*/
 
         colocado = true;
 
@@ -700,9 +700,9 @@ function generarCarrosAleatorios(grafo, numeroDeCarros) {
         // Colocar salida S en borde disponible
         if (grafo.getNodoValue(filas - 1, j).valor === '.') {
           grafo.setNodoValue(filas - 1, j, 'S');
-        } else if (grafo.getNodoValue(0, j).valor === '.') {
+        }/* else if (grafo.getNodoValue(0, j).valor === '.') {
           grafo.setNodoValue(0, j, 'S');
-        }
+        }*/
 
         colocado = true;
       }
@@ -712,7 +712,7 @@ function generarCarrosAleatorios(grafo, numeroDeCarros) {
 
 
 
-const grafo = new Grafo(6, 6);
+const grafo = new Grafo(8, 8);
 generarCarrosAleatorios(grafo, 4);
 
 console.log("Tablero inicial:");
