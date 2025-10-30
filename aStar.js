@@ -474,57 +474,7 @@ function AEstrella(grafoInicial) {
 }
 
 // funcion para buscar cual es la maxima cantidad de pasos que se puede hacer una sola direccion
-function maxAdvance(grafo, carro, direccion) {
-  const filas = grafo.filas, cols = grafo.columnas;
-  let pasos = 0;
 
-  if (carro.orientacion === 'H') {
-    // si el carro es Horizontal, se busca los movimientos hacia derecha e izq
-    if (direccion === 'derecha') {
-      let j = carro.posiciones[carro.posiciones.length - 1].j + 1; //j es la columna de la cabeza +1
-      const i = carro.posiciones[0].i; //i es la fila en donde se encuentra
-      while (j < cols) {
-        const val = grafo.getNodoValue(i, j).valor;
-        if (val === '.' || (val === 'S' && carro.valor === 'B')) { //mientras sea . avanza, pero si se encuentra S, para pero avanza si estamos con carro B
-          pasos++;
-          if (val === 'S') break; // puede entrar y terminar
-          j++;
-        } else break;
-      }
-    } else { // izquierda
-      let j = carro.posiciones[0].j - 1;
-      const i = carro.posiciones[0].i;
-      while (j >= 0) {
-        const val = grafo.getNodoValue(i, j).valor;
-        if (val === '.') { pasos++; j--; }
-        else break;
-      }
-    }
-  } else { // Vertical
-    if (direccion === 'abajo') {
-      let i = carro.posiciones[carro.posiciones.length - 1].i + 1;
-      const j = carro.posiciones[0].j;
-      while (i < filas) {
-        const val = grafo.getNodoValue(i, j).valor;
-        if (val === '.' || (val === 'S' && carro.valor === 'B')) {
-          pasos++;
-          if (val === 'S') break;
-          i++;
-        } else break;
-      }
-    } else { // arriba
-      let i = carro.posiciones[0].i - 1;
-      const j = carro.posiciones[0].j;
-      while (i >= 0) {
-        const val = grafo.getNodoValue(i, j).valor;
-        if (val === '.') { pasos++; i--; }
-        else break;
-      }
-    }
-  }
-
-  return pasos; // 0 significa que no puede moverse
-}
 function puedeColocar(grafo, i, j, orientacion, largo) {
   if (orientacion === 'H') {
     if (j + largo - 1 >= grafo.columnas) return false;
